@@ -27,7 +27,20 @@ func getAllMovies(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(movies)
 	fmt.Println("Inside get All movies")
-	w.WriteHeader(http.StatusOK)
+	// w.WriteHeader(http.StatusOK)
+}
+
+func getMovieById(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	params := mux.Vars(r)
+
+	for _, item := range movies {
+		if params["id"] == item.Id {
+			json.NewEncoder(w).Encode(item)
+			break
+		}
+	}
+
 }
 
 func main() {
@@ -35,6 +48,7 @@ func main() {
 	movies = append(movies, Movies{Id: "001", Title: "KGF-1", Isbn: "100", Director: &Director{FirstName: "Prashanth", LastName: "Neel"}})
 	movies = append(movies, Movies{Id: "002", Title: "Pushpa", Isbn: "101", Director: &Director{FirstName: "Sid", LastName: "Sriram"}})
 	router.HandleFunc("/movies", getAllMovies).Methods("GET")
+	router.HandleFunc("/movies/{id}", getMovieById)
 	fmt.Println("Starting the server at 8080........")
 	log.Fatal(http.ListenAndServe(":8080", router))
 }
