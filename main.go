@@ -30,7 +30,6 @@ var movies []Movies
 func getAllMovies(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(movies)
-	fmt.Println("Inside get All movies")
 	// w.WriteHeader(http.StatusOK)
 }
 
@@ -70,6 +69,24 @@ func addNewMovie(w http.ResponseWriter, r *http.Request) {
 	movies = append(movies, movie)
 }
 
+func updateMovie(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	params := mux.Vars(r)
+
+	for index, item := range movies {
+		if params["id"] == item.Id {
+			var movie Movies
+			json.NewDecoder(r.Body).Decode(&movie)
+			movies = append(movies[:index], movies[index+1:]...)
+			movies = append(movies, movie)
+			break
+		}
+	}
+
+	json.NewEncoder(w).Encode(&movies)
+
+}
+
 func main() {
 	router := mux.NewRouter()
 	movies = append(movies, Movies{Id: "001", Title: "KGF-1", Isbn: "100", Director: &Director{FirstName: "Prashanth", LastName: "Neel"}})
@@ -78,6 +95,7 @@ func main() {
 	router.HandleFunc("/movies/{id}", getMovieById).Methods("GET")
 	router.HandleFunc("/movies/{id}", deleteMovieById).Methods("DELETE")
 	router.HandleFunc("/movies", addNewMovie).Methods("POST")
+	router.HandleFunc("/movies/{id}", updateMovie).Methods("PUT")
 	fmt.Println("Starting the server at 8080........")
 	log.Fatal(http.ListenAndServe(":8080", router))
 }
